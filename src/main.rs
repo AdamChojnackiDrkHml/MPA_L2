@@ -17,13 +17,13 @@ fn main() {
     let mut file_norm = File::create("data/resultTestNorm.csv").unwrap();
     
     for n in (min_n..max_n).step_by(step) {
-        let (t_k, t_p, s) = single_test(n, rep, graph::Graph::create_full_graph_uniform);
+        let res_uni = single_test(n, rep, graph::Graph::create_full_graph_uniform);
 
-        file_uni.write_all((format!("{};{};{:+e}", t_k, t_p, s) + "\n").as_bytes()).unwrap();
+        write_res_to_file(&mut file_uni, &res_uni, n);
 
-        let (t_k, t_p, s) = single_test(n, rep, graph::Graph::create_full_graph_normal);
+        let res_norm = single_test(n, rep, graph::Graph::create_full_graph_normal);
 
-        file_norm.write_all((format!("{};{};{:+e}", t_k, t_p, s) + "\n").as_bytes()).unwrap();
+        write_res_to_file(&mut file_norm, &res_norm, n);
     }
 
 }
@@ -32,24 +32,18 @@ fn sum_edges(mst: &Vec<Edge>) -> f64 {
     mst.iter().map(|elem| elem.weight).sum()
 }
 
-fn single_test(n: usize, rep: usize, generator: impl Fn(usize) -> graph::Graph) -> (f64, f64, f64) {
-    let mut sum_t_k = 0.0;
-    let mut sum_t_p = 0.0;
-    let mut sum_size = 0.0;
+fn single_test(n: usize, rep: usize, generator: impl Fn(usize) -> graph::Graph) -> Vec<(f64, f64, f64)> {
+    let mut res: Vec<(f64, f64, f64)> = vec![];
 
     for _ in 0..rep {
         let g = generator(n);
         let (_, t_k) = get_exec_time(kruskal::kruskal, &g);
         let (edges, t_p) = get_exec_time(prim::prim, &g);
 
-        sum_t_k += t_k;
-        sum_t_p += t_p;
-        sum_size += sum_edges(&edges) as f64;
+        res.push((t_k, t_p, sum_edges(&edges)));
     }
 
-    let rep_f = rep as f64;
-
-    (sum_t_k / rep_f, sum_t_p / rep_f, sum_size / rep_f)
+    return res;
 }
 
 fn get_exec_time(body: impl Fn(&graph::Graph) -> Vec<Edge>, args: &graph::Graph) -> (Vec<Edge>, f64) {
@@ -58,4 +52,10 @@ fn get_exec_time(body: impl Fn(&graph::Graph) -> Vec<Edge>, args: &graph::Graph)
     let total_time =
         start_time.elapsed().as_secs() as f64 + start_time.elapsed().subsec_nanos() as f64 / 1e9;
     (result, total_time)
+}
+
+fn write_res_to_file(file: &mut File, res: &Vec<(f64, f64, f64)>, n: usize) {
+    let str_vec: Vec<String> = res.into_iter().map(|(k, p, s)| format!("{};{};{};{}", n, k, p, s)).collect();
+
+    file.write_all((str_vec.join("\n") + "\n").as_bytes()).unwrap();
 }
