@@ -1,31 +1,35 @@
 use std::{time::Instant, fs::File, io::Write};
 
 
-use graph::Edge;
+use graph::{Edge, Graph};
 
 pub mod graph;
 pub mod kruskal;
 pub mod prim;
+pub mod propagator;
 
 fn main() {
-    let min_n = 200;
-    let max_n = 5000;
-    let step = 40;
-    let rep = 100;
+    // let min_n = 200;
+    // let max_n = 5000;
+    // let step = 40;
+    // let rep = 100;
 
-    let mut file_uni = File::create("data/resultTestUni.csv").unwrap();
-    let mut file_norm = File::create("data/resultTestNorm.csv").unwrap();
+    // let mut file_uni = File::create("data/resultTestUni.csv").unwrap();
+    // let mut file_norm = File::create("data/resultTestNorm.csv").unwrap();
     
-    for n in (min_n..max_n).step_by(step) {
-        let res_uni = single_test(n, rep, graph::Graph::create_full_graph_uniform);
+    // for n in (min_n..max_n).step_by(step) {
+    //     let res_uni = single_test(n, rep, graph::Graph::create_full_graph_uniform);
 
-        write_res_to_file(&mut file_uni, &res_uni, n);
+    //     write_res_to_file(&mut file_uni, &res_uni, n);
 
-        let res_norm = single_test(n, rep, graph::Graph::create_full_graph_normal);
+    //     let res_norm = single_test(n, rep, graph::Graph::create_full_graph_normal);
 
-        write_res_to_file(&mut file_norm, &res_norm, n);
-    }
+    //     write_res_to_file(&mut file_norm, &res_norm, n);
+    // }
 
+    let g = Graph::create_full_graph_uniform(10);
+    let mst = kruskal::kruskal(&g);
+    test_propagator(&mst)
 }
 
 fn sum_edges(mst: &Vec<Edge>) -> f64 {
@@ -58,4 +62,9 @@ fn write_res_to_file(file: &mut File, res: &Vec<(f64, f64, f64)>, n: usize) {
     let str_vec: Vec<String> = res.into_iter().map(|(k, p, s)| format!("{};{};{};{}", n, k, p, s)).collect();
 
     file.write_all((str_vec.join("\n") + "\n").as_bytes()).unwrap();
+}
+
+fn test_propagator(mst: &Vec<Edge>) {
+    println!("{:?}", mst);
+    println!("{}", propagator::propagate(mst, 0));
 }
