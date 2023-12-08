@@ -11,13 +11,13 @@ pub mod propagator;
 
 fn main() {
     let min_n = 100;
-    let max_n = 10100;
+    let max_n = 6100;
     let step = 500;
-    let rep = 30;
+    let rep = 40;
     let rep_root = 30;
 
-    let mut file_uni = File::create("data/dataL3/resultTestUniFin2.csv").unwrap();
-    let mut file_norm = File::create("data/dataL3/resultTestNormFin2.csv").unwrap();
+    let mut file_uni = File::create("data/dataL3/resultTestUniFin2Depth.csv").unwrap();
+    let mut file_norm = File::create("data/dataL3/resultTestNormFin2Depth.csv").unwrap();
     
     // for n in (min_n..max_n).step_by(step) {
     //     let res_uni = single_test(n, rep, graph::Graph::create_full_graph_uniform);
@@ -77,13 +77,13 @@ fn write_res_to_file(file: &mut File, res: &Vec<(f64, f64, f64)>, n: usize) {
     file.write_all((str_vec.join("\n") + "\n").as_bytes()).unwrap();
 }
 
-fn write_res_to_file_propagator(file: &mut File, res: &Vec<(usize, f64)>, n: usize) {
-    let str_vec: Vec<String> = res.into_iter().map(|(r, t)| format!("{};{};{}", n, r, t)).collect();
+fn write_res_to_file_propagator(file: &mut File, res: &Vec<(usize, usize, f64)>, n: usize) {
+    let str_vec: Vec<String> = res.into_iter().map(|(r, d, t)| format!("{};{};{};{}", n, r, d, t)).collect();
 
     file.write_all((str_vec.join("\n") + "\n").as_bytes()).unwrap();
 }
 
-fn test_propagator(mst: &Vec<Edge>) -> usize {
+fn test_propagator(mst: &Vec<Edge>) -> (usize, usize) {
     let rng = rand::thread_rng().gen_range(0..mst.len() - 1);
     propagator::propagate(mst, rng)
 }
@@ -92,8 +92,8 @@ fn average(numbers: &Vec<usize>) -> f32 {
     numbers.iter().sum::<usize>() as f32 / numbers.len() as f32
 }
 
-fn single_test_propagator(n: usize, rep: usize, rep_root: usize, generator: impl Fn(usize) -> graph::Graph) -> Vec<(usize, f64)> {
-    let mut res: Vec<(usize, f64)> = vec![];
+fn single_test_propagator(n: usize, rep: usize, rep_root: usize, generator: impl Fn(usize) -> graph::Graph) -> Vec<(usize, usize, f64)> {
+    let mut res: Vec<(usize, usize, f64)> = vec![];
 
     for _ in 0..rep {
         let g = generator(n);
@@ -103,9 +103,9 @@ fn single_test_propagator(n: usize, rep: usize, rep_root: usize, generator: impl
         let sample = (0 as usize..&mst.len()-1).into_iter().choose_multiple(&mut rng, rep_root);
         for root in sample.into_iter() {
             let start_time = Instant::now();
-            let rounds = propagator::propagate(&mst, root);
+            let (rounds, depth) = propagator::propagate(&mst, root);
             let total_time = start_time.elapsed().as_secs() as f64 + start_time.elapsed().subsec_nanos() as f64 / 1e9;
-            res.push((rounds, total_time));
+            res.push((rounds, depth, total_time));
         }
     }
 

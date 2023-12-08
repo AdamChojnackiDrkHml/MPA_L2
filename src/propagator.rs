@@ -64,11 +64,12 @@ fn create_rooted_node(tree_map: &HashMap<usize, Vec<usize>>, me: usize, parent: 
     rooted_node
 }
 
-pub fn propagate(mst: &Vec<Edge>, root: usize) -> usize {
+pub fn propagate(mst: &Vec<Edge>, root: usize) -> (usize, usize) {
     let rooted_tree = create_rooted_tree(&construct_adj_map(mst), root);
     // println!("{:?}", rooted_tree);
-    propagate_node(&rooted_tree)
+    (propagate_node(&rooted_tree), rooted_tree.max_depth)
 }
+
 
 fn propagate_node(p_node: &PropagatorNode) -> usize {
     let mut round = 1;
@@ -85,9 +86,7 @@ fn propagate_node(p_node: &PropagatorNode) -> usize {
     match number_of_subtrees {
         0 => 1,
         _ => rounds
-            .iter()
-            .enumerate()
-            .map(|(i, x)| *x+i)
+            .into_iter()
             .max()
             .unwrap(), 
     }
