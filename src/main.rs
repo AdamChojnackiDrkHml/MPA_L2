@@ -16,8 +16,8 @@ fn main() {
     let rep = 40;
     let rep_root = 30;
 
-    let mut file_uni = File::create("data/dataL3/resultTestUniFin2Depth.csv").unwrap();
-    let mut file_norm = File::create("data/dataL3/resultTestNormFin2Depth.csv").unwrap();
+    let mut file_uni = File::create("data/dataL3/resultTestUniFin2Depth2.csv").unwrap();
+    let mut file_norm = File::create("data/dataL3/resultTestNormFin2Depth2.csv").unwrap();
     
     // for n in (min_n..max_n).step_by(step) {
     //     let res_uni = single_test(n, rep, graph::Graph::create_full_graph_uniform);
@@ -29,8 +29,8 @@ fn main() {
     //     write_res_to_file(&mut file_norm, &res_norm, n);
     // }
 
-    file_uni.write_all("n;rounds;time\n".as_bytes()).unwrap();
-    file_norm.write_all("n;rounds;time\n".as_bytes()).unwrap();
+    file_uni.write_all("n;rounds;depth;time\n".as_bytes()).unwrap();
+    file_norm.write_all("n;rounds;depth;time\n".as_bytes()).unwrap();
 
     for n in (min_n..max_n).step_by(step) {
         let res_uni = single_test_propagator(n, rep, rep_root, graph::Graph::create_full_graph_uniform);
